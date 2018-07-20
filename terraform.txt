@@ -1,0 +1,153 @@
+################## Overview ###################
+
+Terraform is a tool for building infrastructure (IaC - Infrastructure as a code)
+It is idempotent and it uses high level syntax, allows for deployment of several layers of architecture
+
+#Documentation
+https://www.terraform.io/docs/index.html
+
+## For installation download the package and unzip it
+
+################# Usage ##################
+
+#Terraform files end in .tf extension 
+#example main.tf
+
+# Pull centos and http images and run httpd container
+resource "docker_image" "centos" {
+  name = "centos:latest"
+}
+
+resource "docker_image" "apache" {
+  name = "httpd:latest"
+}
+
+resource "docker_container" "tera-test" {
+  name = "tera-test"
+  image = "${docker_image.apache.latest}"
+  ports {
+    internal = "80"
+    external = "9000"
+  }
+
+}
+
+
+#to initialize the working directory for terraform
+terraform init
+
+#To generate execution plan 
+terraform plan
+
+#to apply the declared resources
+terraform apply 
+
+#to check and show your resources
+terraform show
+
+#to destroy the infrastructure
+terraform destroy
+
+#to taint a resource for redeployment
+terraform taint docker_container.tera-test
+#untaint to revert
+
+## To output something to the console in main.tf
+# Output name and ip address
+output "IP Address" {
+  value = "${docker_container.tera-test.ip_address}"
+}
+
+output "Name" {
+  value = "${docker_container.tera-test.name}"
+}
+
+## Terraform variables in main.tf
+
+variable "image" {
+  description = "image for container"
+  default = "httpd:latest"
+}
+
+#to reference it in the declaration ${var.image}
+#If there is no default value the variable will be interactive
+
+#In order to use modularized set up in main.tf
+
+module "image" {
+ source = "./image"
+ image = "${var.image}"
+}
+
+module "container" {
+  source = "./container"
+  image = "${module.image.image.out}"  ## image_out - output from image module
+}
+
+
+#Modules encapsulate their resources. 
+#A resource in one module cannot directly depend on resources or attributes in other modules, 
+#unless those are exported through outputs. 
+#These outputs can be referenced in other places in your configuration
+
+## Map variables can be used to lookup default values for other variables
+#variables.tf
+
+## env variable for map and lookup
+variable "env" {
+  description = "env: dev or prod"
+}
+
+variable "port" {
+  description = "External port for the container"
+  type = "map"
+  default = {
+    dev = "12000"
+    prod = "10000"
+  }
+}
+
+#main.tf
+module "container" {
+  source = "./containers"
+  image = "${module.image.image_out}"
+  port = "${lookup(var.port, var.env)}"
+}
+
+## lookup var.port depending on var.env
+## variables can be provided with -var flag on terrafom command also
+terraform apply -var 'foo=bar'
+
+#Variable values can also be placed in file terraform.tfvars , definitions can remain in variables.tf
+#example variables.tf
+variable "port" {
+  description = "External port for the container"
+  type = "map"
+}
+#terraform.tfvars
+port = {
+  dev = "12000"
+  prod = "10000"
+}
+
+
+########### Workspaces ############
+
+#In order to have multiple environments/deployments at the same time 
+#new workspace should be created
+
+terraform workspace new NAME
+#to switch between
+terraform workspace select NAME  # default for the default workspace
+
+### to execute commands on the host or on other resources 
+# null resource is used like the following:
+
+resource "null_resource" "command" {
+  provisioner "local-exec" {
+    command = "echo 'This is a test exec command' > file.txt"
+  }
+}
+
+## To format the code in all files
+terraform fmt --diff
