@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/usr/bin/aws s3 sync s3://"terraform-code-bucket-for-wp-20919" /var/www/html
+echo "30 * * * * root /usr/bin/aws s3 sync s3://terraform-code-bucket-for-wp-20919 /var/www/html" > /etc/cron.d/wordpress_s3_file_sync
+

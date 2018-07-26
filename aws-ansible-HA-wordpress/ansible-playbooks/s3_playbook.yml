@@ -1,0 +1,8 @@
+### Sync wordpress files to the S3 code bucket
+- hosts: wp
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  tasks:
+    - name: Upload to the bucket
+      shell: aws s3 sync /var/www/html s3://{{ bucket_name }}/ --delete

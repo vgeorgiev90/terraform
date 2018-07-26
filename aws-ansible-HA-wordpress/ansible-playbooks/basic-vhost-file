@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+
+ServerName wordpress.example.com
+ServerAlias www.wordpress.example.com
+
+DocumentRoot /var/www/html
+
+<Directory /var/www/html>
+    Options -Indexes +FollowSymLinks +MultiViews
+    AllowOverride All
+    Require all granted
+</Directory>
+
+<FilesMatch \.php$>
+   SetHandler "proxy:unix:/var/run/php70-fpm.sock"
+</FilesMatch>
+
+</VirtualHost>
+

@@ -1,0 +1,44 @@
+## wordpress deployment for AMI creation
+---
+- hosts: wp
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  gather_facts: yes
+  tasks:
+    - name: Install httpd
+      yum: name=httpd state=latest
+    - service: name=httpd state=restarted enabled=yes
+    - name: Install php-fpm-7
+      yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
+    - yum: name=http://rpms.remirepo.net/enterprise/remi-release-7.rpm state=present
+    - yum: name=php70-php-fpm state=latest
+    - yum: name=php70-php-mysqlnd state=latest
+    - yum: name=php70-php-gd state=latest
+    - shell: sed -i 's/listen = 127.0.0.1:9000/listen = \/var\/run\/php70-fpm.sock/' /etc/opt/remi/php70/php-fpm.d/www.conf && sed -i 's/;listen.owner = nobody/listen.owner = apache/' /etc/opt/remi/php70/php-fpm.d/www.conf && sed -i 's/;listen.group = nobody/listen.group = apache/' /etc/opt/remi/php70/php-fpm.d/www.conf && sed -i 's/;listen.mode = 0660/listen.mode = 0660/' /etc/opt/remi/php70/php-fpm.d/www.conf
+    - name: Start the php70-fpm service
+      service: name=php70-php-fpm state=restarted enabled=yes
+    - name: Get and install wordpress
+      shell: wget http://wordpress.org/latest.tar.gz -P /home/ec2-user
+    - unarchive:
+        remote_src: yes
+        src: /home/ec2-user/latest.tar.gz
+        dest: /var/www/html
+    - shell: cp -R /var/www/html/wordpress/* /var/www/html && chown -R apache:apache /var/www/html && rm -rf /home/ec2-user/latest.tar.gz
+    - copy:
+        remote_src: yes
+        src: /var/www/html/wp-config-sample.php
+        dest: /var/www/html/wp-config.php
+        owner: apache
+        group: apache
+    - shell: sed -i "s/define('DB_NAME', 'database_name_here');/define('DB_NAME', '"{{ db_name }}"');/" /var/www/html/wp-config.php
+    - shell: sed -i "s/define('DB_USER', 'username_here');/define('DB_USER', 'root');/" /var/www/html/wp-config.php
+    - shell: sed -i "s/define('DB_PASSWORD', 'password_here');/define('DB_PASSWORD', '"{{ db_password }}"');/" /var/www/html/wp-config.php
+    - shell: sed -i "s/define('DB_HOST', 'localhost');/define('DB_HOST', '"{{ db_host }}"');/" /var/www/html/wp-config.php
+    - name: Basic vhost creation
+      template:
+        src: basic-vhost-file
+        dest: /etc/httpd/conf.d/default.conf
+        owner: apache
+        group: apache
+        mode: 0644
