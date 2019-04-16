@@ -3,8 +3,8 @@ variable "public_key_path" {}
 variable "dev_instance_type" {}
 variable "dev_sg" {}
 variable "dev_subnet" {}
-variable "wp_deploy_command" {}
-variable "s3_playbook" {}
+#variable "wp_deploy_command" {}
+#variable "s3_playbook" {}
 variable "app_subnet" {
   type = "list"
 }

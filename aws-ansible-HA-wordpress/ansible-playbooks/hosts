@@ -1,1 +1,9 @@
 [wp]
+34.244.43.180 ansible_ssh_user=ec2-user
+34.255.194.109 ansible_ssh_user=ec2-user
+34.241.133.228 ansible_ssh_user=ec2-user
+34.247.89.45 ansible_ssh_user=ec2-user
+18.202.177.243 ansible_ssh_user=ec2-user
+34.247.176.251 ansible_ssh_user=ec2-user
+34.254.159.247 ansible_ssh_user=ec2-user
+52.18.56.203 ansible_ssh_user=ec2-user

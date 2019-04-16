@@ -1,0 +1,33 @@
+### Sync wordpress files to the S3 code bucket
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  tasks:
+  - name: Install dependancies
+    shell: yum install httpd php gcc glibc glibc-common gd gd-devel -y
+  - shell: groupadd nagcmd
+  - name: Add nagios user
+    user:
+      name: nagios
+  - shell: usermod -aG nagcmd nagios && usermod -aG nagcmd apache
+  - file:
+      path: /tmp/downloads
+      state: directory
+  - name: Download nagios core
+    shell: wget http://prdownloads.sourceforge.net/sourceforge/nagios/nagios-4.0.8.tar.gz -P /tmp/downloads && wget http://nagios-plugins.org/download/nagios-plugins-2.0.3.tar.gz -P /tmp/downloads
+  - shell: tar -xzf /tmp/downloads/nagios-4.0.8.tar.gz -C /tmp/downloads && tar -xzf /tmp/downloads/nagios-plugins-2.0.3.tar.gz -C /tmp/downloads
+  - name: Install nagios
+    shell: ./configure --with-command-group=nagcmd && make all && make install && make install-init && make install-config && make install-commandmode && make install-webconf
+    args:
+      chdir: /tmp/downloads/nagios-4.0.8
+  - template:
+      src: files/htpasswd.users
+      dest: /usr/local/nagios/etc/htpasswd.users
+      owner: root
+      group: root
+  - service: name=httpd state=restarted enabled=yes
+  - shell: ./configure --with-nagios-user=nagios --with-nagios-group=nagios && make && make install
+    args:
+      chdir: /tmp/downloads/nagios-plugins-2.0.3
+  - service: name=nagios state=restarted enabled=yes

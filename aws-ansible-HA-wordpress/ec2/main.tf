@@ -15,7 +15,7 @@ data "aws_ami" "dev_server" {
     name   = "owner-alias"
     values = ["amazon"]
   }
-
+  owners = ["amazon"]
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm*-x86_64-gp2"]
@@ -38,11 +38,23 @@ resource "aws_instance" "development" {
   }
 }
 
+resource "aws_instance" "support" {
+  ami = "${data.aws_ami.dev_server.id}"
+  instance_type = "${var.dev_instance_type}"
+  key_name               = "${aws_key_pair.ssh_key_pair.id}"
+  vpc_security_group_ids = ["${var.dev_sg}"]
+  subnet_id              = "${var.dev_subnet}"
+  associate_public_ip_address = true
+  tags {
+    Name = "Support instance"
+  }
+}
+
 ############ Execute ansible playbook to set up wordpress blog  ################
 resource "null_resource" "ansible_host_file" {
   depends_on = ["aws_instance.development"]
   provisioner "local-exec" {
-    command = "echo ${aws_instance.development.public_ip} >> ansible-playbooks/hosts"
+    command = "echo '${aws_instance.development.public_ip} ansible_ssh_user=ec2-user' >> ansible-playbooks/hosts"
   }
 }
 
@@ -59,9 +71,17 @@ resource "null_resource" "wait" {
 resource "null_resource" "ansible_wp_deploy" {
   depends_on = ["aws_instance.development","null_resource.wait","aws_db_instance.wp_database"]
   provisioner "local-exec" {
-    command = "${var.wp_deploy_command} --limit=${aws_instance.development.public_ip} --extra-vars 'db_host=${aws_db_instance.wp_database.address} db_password=${var.db_root_password} db_name=${var.db_name}' && ${var.s3_playbook} --limit=${aws_instance.development.public_ip} --extra-vars 'bucket_name=${aws_s3_bucket.code_bucket.id}'"
+    command = "ansible-playbook -i ${aws_instance.development.public_ip}, ansible-playbooks/wordpress_install.yml --extra-vars 'db_host=${aws_db_instance.wp_database.address} db_password=${var.db_root_password} db_name=${var.db_name}' && ansible-playbook -i ${aws_instance.development.public_ip}, ansible-playbooks/s3_playbook.yml --extra-vars 'bucket_name=${aws_s3_bucket.code_bucket.id}'"
   }
 }
+
+resource "null_resource" "nagios_deploy" {
+  depends_on = ["aws_instance.support","null_resource.wait","aws_db_instance.wp_database"]
+  provisioner "local-exec" {
+    command = "ansible-playbook -i ${aws_instance.support.public_ip}, ansible-playbooks/nagios_server.yml && ansible-playbook -i ${aws_instance.support.public_ip}, ansible-playbooks/elastic.yml"
+  }
+}
+
 
 ############ S3 bucket creation ##############
 
@@ -87,7 +107,7 @@ resource "aws_ami_from_instance" "wp_ami" {
   source_instance_id = "${aws_instance.development.id}"
   depends_on = ["aws_instance.development","null_resource.ansible_wp_deploy","aws_db_instance.wp_database"]
 }
-
+/*
 resource "null_resource" "userdata" {
   provisioner "local-exec" {
     command = <<EOT
@@ -101,7 +121,7 @@ EOF
 EOT
   } 
 }
-
+*/
 ########### Create RDS resources #############
 
 ####### DB subnet group in two AZs #######

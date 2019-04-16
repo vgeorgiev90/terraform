@@ -1,0 +1,20 @@
+### Sync wordpress files to the S3 code bucket
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  tasks:
+  - name: elastic and kibana repos
+    template:
+      src: files/elastic.repo
+      dest: /etc/yum.repos.d/elastic.repo
+      owner: root
+      group: root
+  - template:
+      src: files/kibana.repo
+      dest: /etc/yum.repos.d/kibana.repo
+      owner: root
+      group: root
+  - name: Install elk stack
+    shell: yum install elasticsearch kibana java-1.8.0-openjdk.x86_64 -y
+  

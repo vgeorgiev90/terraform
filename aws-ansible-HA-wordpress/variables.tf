@@ -41,13 +41,13 @@ variable "dev_instance_type" {
   description = "type for the development instance"
 }
 
-variable "wp_deploy_command" {
-  description = "Ansible command for wordpress deployment"
-}
+#variable "wp_deploy_command" {
+#  description = "Ansible command for wordpress deployment"
+#}
 
-variable "s3_playbook" {
-  description = "Ansible playbook for wordpress s3 file sync"
-}
+#variable "s3_playbook" {
+#  description = "Ansible playbook for wordpress s3 file sync"
+#}
 
 ############ App server and AG variables ############
 

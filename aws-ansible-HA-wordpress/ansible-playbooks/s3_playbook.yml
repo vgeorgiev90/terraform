@@ -1,5 +1,5 @@
 ### Sync wordpress files to the S3 code bucket
-- hosts: wp
+- hosts: all
   remote_user: ec2-user
   become: yes
   connection: ssh

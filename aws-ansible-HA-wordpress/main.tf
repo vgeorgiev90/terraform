@@ -27,7 +27,7 @@ module "ec2" {
   dev_sg = "${module.vpc.bastion_sg}"
   dev_subnet = "${module.vpc.public[0]}"
   elb_subnet = "${module.vpc.public[1]}"
-  wp_deploy_command = "${var.wp_deploy_command}"
+  #wp_deploy_command = "${var.wp_deploy_command}"
   app_volume_size = "${var.app_volume_size}"
   ag_min = "${var.ag_min}"
   ag_max = "${var.ag_max}"
@@ -46,5 +46,5 @@ module "ec2" {
   db_sg = "${module.vpc.db_sg}"
   db_subnets = "${module.vpc.db_private_subnet}"
   bucket_name = "${var.bucket_name}"
-  s3_playbook = "${var.s3_playbook}"
+  #s3_playbook = "${var.s3_playbook}"
 }

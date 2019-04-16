@@ -1,0 +1,8 @@
+server {
+    listen 80;
+    server_name *.elb.amazonaws.com ;
+    root   /var/www/html;
+    index  index.php index.html index.htm;
+    include /etc/nginx/wordpress.conf;
+    include /etc/nginx/limits.conf;
+}
