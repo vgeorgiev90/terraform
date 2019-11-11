@@ -16,10 +16,15 @@ variable "database_pass" {}
 variable "app_key" {}
 variable "app_name" {}
 
+#variable "auth0_client_id" {}
+#variable "auth0_client_secret" {}
+#variable "auth0_domain" {}
+#variable "auth0_userid" {}
 
-
-variable "auth0_client_id" {}
-variable "auth0_client_secret" {}
-variable "auth0_domain" {}
-variable "auth0_userid" {}
-
+variable "firebase_app_id" {}
+variable "firebase_api_key" {}
+variable "firebase_auth_domain" {}
+variable "firebase_db" {}
+variable "firebase_proj-id" {}
+variable "firebase_storage_bucket" {}
+variable "firebase_msg_sender_id" {}
