@@ -150,7 +150,7 @@ database_user = "postgres"
 database_pass = "CK616j1bAnR3FLcDfHFv"
 
 firebase_app_id = "1:801061313259:web:404bd9426588db39f9fcae"
-firebase_api_key = "AIzaSyAgvMkKEWKnbJLKqAzjcYnzupXy_CIR5AQ"
+firebase_api_key = "fb-api-key"
 firebase_auth_domain = "firechat-256210.firebaseapp.com"
 firebase_db = "https://firechat-256210.firebaseio.com"
 firebase_proj-id = "firechat-256210"
