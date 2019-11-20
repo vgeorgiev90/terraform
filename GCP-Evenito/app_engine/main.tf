@@ -13,7 +13,7 @@ provisioner "local-exec" {
 
 resource "null_resource" "appdeploy" {
 provisioner "local-exec" {
-   command = "/root/terra-viktor/manage.sh -c deploy-app-engine -s ${var.credentials} -d ${var.app_engine_db_host}"
+   command = "/root/evenito-deploy/application.py --cmd deploy-app-engine --sa ${var.credentials} --database ${var.app_engine_db_host} --project ${var.app_engine_project}"
 }
 }
 
